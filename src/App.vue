@@ -40,7 +40,6 @@ import {
   useWeb3Modal,
   useWeb3ModalAccount
 } from '@web3modal/ethers/vue'
-import { BrowserProvider } from 'ethers'
 
 // 1. Get projectId at https://cloud.walletconnect.com
 const projectId = 'cd7cca4c881f9d1c96a8da90262b3eac'
@@ -108,7 +107,6 @@ function test() {
 <template>
   <button @click="modal.open()">Open Connect Modal</button>
   <button @click="modal.open({ view: 'Networks' })">Open Network Modal</button>
-  <button @click="modal.open({ view: 'Wallets' })">Open Wallet Modal</button>
   <button @click="console.log(isConnected, address, chainId)">Log Account</button>
   <button @click="test()">Test</button>
 </template>
