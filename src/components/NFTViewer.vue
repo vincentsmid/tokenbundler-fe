@@ -91,7 +91,9 @@ export default {
     }
 
     const doSomething = (nft: any) => {
+      // @ts-ignore
       if (!selectedNfts.value.find((item) => item.token_address === nft.token_address)) {
+        // @ts-ignore
         selectedNfts.value.push(nft)
         console.log('Added to selection:', nft.token_address)
       } else {
@@ -100,6 +102,7 @@ export default {
     }
 
     const isSelected = (tokenaddress: String) => {
+      // @ts-ignore
       return !!selectedNfts.value.find((nft) => nft.token_address === tokenaddress)
     }
 

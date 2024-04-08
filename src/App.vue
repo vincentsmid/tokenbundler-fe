@@ -13,7 +13,7 @@ import { watchEffect, ref } from 'vue'
 import { userData } from './store'
 
 import NFTViewer from './components/NFTViewer.vue'
-import type { create } from 'domain'
+// import type { create } from 'domain'
 
 interface Asset {
   category: number
@@ -406,6 +406,7 @@ watchEffect(() => {
 watchEffect(async () => {
   if (isConnected.value && address.value) {
     // const provider = new ethers.BrowserProvider(window.ethereum)
+    // @ts-ignore
     const _provider = new ethers.BrowserProvider(window.ethereum)
     provider = _provider
     // const signer = await provider.getSigner()
