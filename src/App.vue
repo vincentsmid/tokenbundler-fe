@@ -358,7 +358,7 @@ const sepolia = {
 const metadata = {
   name: 'Token Bundler',
   description: 'bundly bundly',
-  url: 'http://localhost:5173',
+  url: 'https://www.tokenbundler.xyz',
   icons: ['https://avatars.mywebsite.com/']
 }
 
