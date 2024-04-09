@@ -2,13 +2,13 @@
 import {
   createWeb3Modal,
   defaultConfig,
-  useWeb3Modal,
+  // useWeb3Modal,
   useWeb3ModalAccount
 } from '@web3modal/ethers/vue'
 
-import { ethers, Contract, hexlify } from 'ethers'
+import { ethers, Contract } from 'ethers'
 
-import { watchEffect, ref } from 'vue'
+import { watchEffect } from 'vue'
 
 import { userData, selectedItems, refreshStore } from './store'
 
@@ -412,7 +412,7 @@ createWeb3Modal({
   enableOnramp: true
 })
 
-const modal = useWeb3Modal()
+// const modal = useWeb3Modal()
 
 const { address, chainId, isConnected } = useWeb3ModalAccount()
 
