@@ -31,7 +31,7 @@
 <script lang="ts">
 import { ref, watch, watchEffect } from 'vue'
 import type { Ref } from 'vue'
-import { userData, selectedItems, refereshStore, refreshStore } from '../store'
+import { userData, selectedItems, refreshStore } from '../store'
 import { hexlify } from 'ethers'
 
 interface NftInformationType {
