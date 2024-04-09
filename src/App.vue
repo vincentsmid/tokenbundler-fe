@@ -10,7 +10,7 @@ import { ethers, Contract, hexlify } from 'ethers'
 
 import { watchEffect, ref } from 'vue'
 
-import { userData } from './store'
+import { userData, selectedItems, refreshStore } from './store'
 
 import NFTViewer from './components/NFTViewer.vue'
 // import type { create } from 'domain'
@@ -22,29 +22,62 @@ interface Asset {
   amount: string | number
 }
 
-const assets: Asset[] = [
-  {
-    category: 1,
-    assetAddress: hexlify('0xddf366d6e74d7a83181335a528b8dea6002be288'),
-    id: 234,
-    amount: 1
-  },
-  {
-    category: 1,
-    assetAddress: hexlify('0xddf366d6e74d7a83181335a528b8dea6002be288'),
-    id: 233,
-    amount: 1
-  }
-]
+// test data
+// const assets: Asset[] = [
+//   {
+//     category: 1,
+//     assetAddress: hexlify('0xddf366d6e74d7a83181335a528b8dea6002be288'),
+//     id: 234,
+//     amount: 1
+//   },
+//   {
+//     category: 1,
+//     assetAddress: hexlify('0xddf366d6e74d7a83181335a528b8dea6002be288'),
+//     id: 233,
+//     amount: 1
+//   }
+// ]
 
+// Should not be hardcoded, but for the sake of the demo
 const projectId = 'cd7cca4c881f9d1c96a8da90262b3eac'
 
 const contractAddress = '0x448E3D0a4BAa00FE511a03E7B27177AeDE6d9636'
 
-// const contractAbi = [
-//   'function create(tuple[] _assets) returns (uint256)',
-//   'function unwrap(uint256 _bundleId)',
-//   'function bundle(uint256 __bundleId) view returns (tuple[])'
+// const contractAddress721 = '0xDdF366d6e74D7A83181335A528b8DeA6002Be288'
+
+// Scrapped - did not have time to implement
+// const contractAbiToken1 = [
+//   {
+//     inputs: [{ internalType: 'string', name: '_uri', type: 'string' }],
+//     stateMutability: 'nonpayable',
+//     type: 'constructor'
+//   },
+//   {
+//     anonymous: false,
+//     inputs: [
+//       { indexed: true, internalType: 'address', name: 'operator', type: 'address' },
+//       { indexed: false, internalType: 'bool', name: 'approved', type: 'bool' }
+//     ],
+//     name: 'ApprovalForAll',
+//     type: 'function'
+//   }
+// ]
+
+// const contractAbiToken0 = [
+//   {
+//     inputs: [{ internalType: 'string', name: '_uri', type: 'string' }],
+//     stateMutability: 'nonpayable',
+//     type: 'constructor'
+//   },
+//   {
+//     anonymous: false,
+//     inputs: [
+//       { indexed: true, internalType: 'address', name: 'spender', type: 'address' },
+//       { indexed: true, internalType: 'uint256', name: 'amount', type: 'uint256' }
+//     ],
+//     name: 'approve',
+//     type: 'event'
+//   }
 // ]
 
 const contractAbi = [
@@ -358,7 +391,7 @@ const sepolia = {
 const metadata = {
   name: 'Token Bundler',
   description: 'bundly bundly',
-  url: 'https://www.tokenbundler.xyz',
+  url: 'https://tokenbundler.xyz',
   icons: ['https://avatars.mywebsite.com/']
 }
 
@@ -403,20 +436,23 @@ watchEffect(() => {
   }
 })
 
+// func prepared for future provider change, currently unnecessary
+async function changeProvider(abi: any = contractAbi, contractAdd: string = contractAddress) {
+  // @ts-ignore
+  const _provider = new ethers.BrowserProvider(window.ethereum)
+  provider = _provider
+  // const signer = await provider.getSigner()
+  const _signer = await provider.getSigner()
+  signer = _signer
+  // console.log('Signer:', signer)
+
+  const _contract = new ethers.Contract(contractAdd, abi, _signer)
+  contract = _contract
+}
+
 watchEffect(async () => {
   if (isConnected.value && address.value) {
-    // const provider = new ethers.BrowserProvider(window.ethereum)
-    // @ts-ignore
-    const _provider = new ethers.BrowserProvider(window.ethereum)
-    provider = _provider
-    // const signer = await provider.getSigner()
-    const _signer = await provider.getSigner()
-    signer = _signer
-    // console.log('Signer:', signer)
-
-    const _contract = new ethers.Contract(contractAddress, contractAbi, _signer)
-    contract = _contract
-    // console.log('Contract:', contract.value)
+    changeProvider()
   }
 })
 
@@ -428,10 +464,61 @@ watchEffect(() => {
   }
 })
 
-async function createBundle(assets: Asset[]) {
+// scrapped - did not have time to implement
+// async function approveItem() {
+//   if (!isConnected.value) throw Error('User disconnected')
+//   const assets: Asset[] = selectedItems.items
+
+//   const formattedAssets = assets
+//     .map((asset) => {
+//       return {
+//         category: asset.category,
+//         assetAddress: asset.assetAddress,
+//         id: asset.id,
+//         amount: asset.amount
+//       }
+//     })
+//     .map((a) => Object.values(a))
+
+//   if (formattedAssets[0][0] === 0) {
+//     // This is ugly, however i do not want to rewrite the logic, so it will have to do for now
+//     await changeProvider(contractAbiToken0)
+//   } else {
+//     await changeProvider(contractAbiToken1)
+//   }
+
+//   try {
+//     console.log('contrekt', contract)
+//     const gasLimit = await contract?.ApprovalForAll.estimateGas(formattedAssets)
+
+//     const gas = (await provider?.getFeeData())?.gasPrice
+
+//     console.log('gas', gas)
+
+//     const tx = await contract?.ApprovalForAll(formattedAssets, {
+//       // gasLimit: ((gas ?? 25000n) * 150n) / 100n,
+//       // gasPrice: (gas ?? 25000n) * 100n
+//       gasLimit: gasLimit,
+//       gasPrice: gas
+//     })
+//     console.log('teikso', tx)
+//     const receipt = await tx.wait()
+
+//     console.log(receipt)
+
+//     console.log(`Approved succesfully. Transaction Hash: ${receipt.transactionHash}`)
+//     changeProvider()
+//   } catch (error) {
+//     console.error('Error approving:', error)
+//   }
+// }
+
+async function createBundle() {
   if (!isConnected.value) throw Error('User disconnected')
 
   console.log('Contract:', contract)
+
+  const assets: Asset[] = selectedItems.items
 
   const formattedAssets = assets
     .map((asset) => {
@@ -452,29 +539,40 @@ async function createBundle(assets: Asset[]) {
     // const tx = await contract.value?.create(formattedAssets)
     console.log('call functions', contract?.getFunction('create'))
 
-    // const gas = await provider?.estimateGas({
-    //   to: contractAddress,
-    //   from: address.value
-    // })
+    const gasLimit = await contract?.create.estimateGas(formattedAssets)
 
-    // console.log('gas', gas)
+    const gas = (await provider?.getFeeData())?.gasPrice
+
+    console.log('gas', gas)
 
     const tx = await contract?.create(formattedAssets, {
-      gasLimit: 10000000000,
-      maxFeePerGas: 1000000000,
-      nonce: undefined,
-      gasPrice: 25000
+      // gasLimit: ((gas ?? 25000n) * 150n) / 100n,
+      // gasPrice: (gas ?? 25000n) * 100n
+      gasLimit: gasLimit,
+      gasPrice: gas
     })
     console.log('teikso', tx)
     const receipt = await tx.wait()
 
     console.log(receipt)
 
+    refreshStore.currentState = receipt
+
     console.log(`Bundle created successfully. Transaction Hash: ${receipt.transactionHash}`)
   } catch (error) {
     console.error('Error creating bundle:', error)
   }
 }
+
+// scrapped - did not have time to implement
+// async function makeAllTokensUsable() {
+//   if (!isConnected.value) throw Error('User disconnected')
+
+//   try {
+//   } catch (error) {
+//     console.error('Error creating bundle:', error)
+//   }
+// }
 
 const whoIsSigner = () => {
   console.log('Signer:', signer)
@@ -488,7 +586,7 @@ const whoIsSigner = () => {
     <button @click="console.log(isConnected, address, chainId)">Log Account</button>
     <button @click="updateUser()">update user</button> -->
     <w3m-button />
-    <button @click="createBundle(assets)">Bundle Assets</button>
+    <button @click="createBundle()">Bundle Assets</button>
     <button @click="whoIsSigner()">Who is Signer</button>
   </div>
 

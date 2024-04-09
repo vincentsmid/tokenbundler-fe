@@ -1,13 +1,14 @@
 <template>
   <div>
-    <button @click="manualRefresh">Refresh NFTs</button>
+    <button @click="manualRefresh" style="position: absolute">Refresh NFTs</button>
+    <button @click="clearSelection" style="position: absolute; left: 300px">Clear Selection</button>
     <ul>
       <li v-for="nft in nfts" :key="nft.token_address">
         <h2>{{ nft.name }}</h2>
         <img :src="nft.image_link" :alt="nft.name" width="100" />
         <p>{{ nft.description }}</p>
         <button @click="doSomething(nft)">Action</button>
-        <span v-if="isSelected(nft.token_address)">Selected</span>
+        <span v-if="isSelected(nft.token_id)">Selected</span>
         <p>{{ nft.token_address }}</p>
         <p>{{ nft.token_id }}</p>
       </li>
@@ -18,8 +19,9 @@
         <p>Balance: {{ token.balance }}</p>
         <p>USD Value: {{ token.usd_value }}</p>
         <p>USD Value Percent Change: {{ token.usd_value_percent_change }}</p>
-        <button @click="doSomething(token)">Action</button>
-        <span v-if="isSelected(token.token_address)">Selected</span>
+        <input type="number" v-model="tempNumber" placeholder="Enter number" />
+        <button @click="doSomething(token, tempNumber)">Action</button>
+        <span v-if="isSelected(token.token_id)">Selected</span>
         <p>{{ token.token_address }}</p>
       </li>
     </ul>
@@ -27,8 +29,10 @@
 </template>
 
 <script lang="ts">
-import { ref, watch } from 'vue'
-import { userData } from '../store'
+import { ref, watch, watchEffect } from 'vue'
+import type { Ref } from 'vue'
+import { userData, selectedItems, refereshStore, refreshStore } from '../store'
+import { hexlify } from 'ethers'
 
 interface NftInformationType {
   amount: number
@@ -51,13 +55,31 @@ interface TokenInformationType {
   image: string
 }
 
+interface PassedInformationType {
+  id: number
+  assetAddress: string
+  category: number
+  amount: number | 1
+}
+
 export default {
   setup() {
     const nfts = ref<NftInformationType[]>([])
     const tokens = ref<TokenInformationType[]>([])
-    const selectedNfts = ref([])
+    const selectedNfts: Ref<PassedInformationType[]> = ref([])
+
+    const clearSelection = () => {
+      selectedNfts.value = []
+    }
 
     const fetchNFTs = async (refresh: boolean = false) => {
+      const chainID =
+        parseInt(userData.chainID) === 11155111
+          ? 'sepolia'
+          : parseInt(userData.chainID) === 1
+            ? 'eth'
+            : undefined
+
       const requestOptions = {
         method: 'POST',
         headers: {
@@ -66,7 +88,7 @@ export default {
         },
         body: JSON.stringify({
           wallet_id: userData.wallet,
-          chain: 'sepolia'
+          chain: chainID
         })
       }
       try {
@@ -90,20 +112,43 @@ export default {
       }
     }
 
-    const doSomething = (nft: any) => {
+    const doSomething = (
+      item: NftInformationType | TokenInformationType,
+      amountSent: number = 1
+    ) => {
       // @ts-ignore
-      if (!selectedNfts.value.find((item) => item.token_address === nft.token_address)) {
+      console.log(item.contract_type)
+      const passedInformation: PassedInformationType = {
+        assetAddress: hexlify(item.token_address),
+        id: 'token_id' in item ? item.token_id : 0,
+        category:
+          'contract_type' in item
+            ? item.contract_type === 'ERC721'
+              ? 1
+              : item.contract_type === 'ERC1155'
+                ? 2
+                : item.contract_type === 'ERC20'
+                  ? 0
+                  : 0
+            : 0,
+        amount: 'amount' in item ? item.amount : amountSent
+      }
+
+      const isAlreadySelected = selectedNfts.value.find(
         // @ts-ignore
-        selectedNfts.value.push(nft)
-        console.log('Added to selection:', nft.token_address)
+        (nft) => nft.token_address === item.token_address
+      )
+      if (!isAlreadySelected) {
+        selectedNfts.value.push(passedInformation)
+        console.log('Added to selection:', item.token_address)
       } else {
-        console.log('NFT already selected:', nft.token_address)
+        console.log('Item already selected:', item.token_address)
       }
     }
 
-    const isSelected = (tokenaddress: String) => {
+    const isSelected = (tokenID: Number) => {
       // @ts-ignore
-      return !!selectedNfts.value.find((nft) => nft.token_address === tokenaddress)
+      return !!selectedNfts.value.find((nft) => nft.id === tokenID)
     }
 
     const logUserData = () => {
@@ -126,9 +171,22 @@ export default {
       }
     )
 
-    // onMounted(() => {
-    //   fetchNFTs()
-    // })
+    watch(
+      selectedNfts,
+      (newVal) => {
+        // @ts-ignore
+        selectedItems.items = newVal
+        console.log('Selected items:', selectedItems.items)
+      },
+      {
+        deep: true
+      }
+    )
+
+    watchEffect(() => {
+      manualRefresh()
+      console.log(refreshStore.currentState)
+    })
 
     return {
       nfts,
@@ -137,12 +195,11 @@ export default {
       logUserData,
       isSelected,
       selectedNfts,
-      manualRefresh
+      manualRefresh,
+      clearSelection
     }
   }
 }
 </script>
 
-<style>
-/* Your styles here */
-</style>
+<style></style>
