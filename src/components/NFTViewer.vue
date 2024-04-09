@@ -19,9 +19,9 @@
         <p>Balance: {{ token.balance }}</p>
         <p>USD Value: {{ token.usd_value }}</p>
         <p>USD Value Percent Change: {{ token.usd_value_percent_change }}</p>
-        <input type="number" v-model="tempNumber" placeholder="Enter number" />
-        <button @click="doSomething(token, tempNumber)">Action</button>
-        <span v-if="isSelected(token.token_id)">Selected</span>
+        <input type="number" v-model="token.amount" placeholder="Enter number" />
+        <button @click="doSomething(token, token.amount)">Action</button>
+        <span v-if="isSelected(token.token_address)">Selected</span>
         <p>{{ token.token_address }}</p>
       </li>
     </ul>
@@ -53,6 +53,7 @@ interface TokenInformationType {
   usd_value: string
   usd_value_percent_change: string
   image: string
+  amount: number
 }
 
 interface PassedInformationType {
@@ -146,7 +147,7 @@ export default {
       }
     }
 
-    const isSelected = (tokenID: Number) => {
+    const isSelected = (tokenID: Number | String) => {
       // @ts-ignore
       return !!selectedNfts.value.find((nft) => nft.id === tokenID)
     }
