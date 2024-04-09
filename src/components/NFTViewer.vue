@@ -1,8 +1,8 @@
 <template>
   <div>
-    <button @click="manualRefresh" style="position: absolute">Refresh NFTs</button>
-    <button @click="clearSelection" style="position: absolute; left: 300px">Clear Selection</button>
-    <ul>
+    <button @click="manualRefresh">Refresh NFTs</button>
+    <button @click="clearSelection">Clear Selection</button>
+    <ul style="padding-top: 6rem">
       <li v-for="nft in nfts" :key="nft.token_address">
         <h2>{{ nft.name }}</h2>
         <img :src="nft.image_link" :alt="nft.name" width="100" />
@@ -13,7 +13,7 @@
         <p>{{ nft.token_id }}</p>
       </li>
     </ul>
-    <ul>
+    <ul style="padding-top: 2rem">
       <li v-for="token in tokens" :key="token.token_address">
         <h2>{{ token.name }}</h2>
         <p>Balance: {{ token.balance }}</p>
@@ -92,13 +92,18 @@ export default {
           chain: chainID
         })
       }
+
+      if (!userData.wallet && !chainID) {
+        return
+      }
+
       try {
         const response_nfts = await fetch(
-          `http://localhost:8000/api/v1/nft_info/?refresh=${refresh}`,
+          `https://tb.letna.space/api/v1/nft_info/?refresh=${refresh}`,
           requestOptions
         )
         const response_tokens = await fetch(
-          `http://localhost:8000/api/v1/token_info/?refresh=${refresh}`,
+          `https://tb.letna.space/api/v1/token_info/?refresh=${refresh}`,
           requestOptions
         )
         if (!response_nfts.ok || !response_tokens.ok)

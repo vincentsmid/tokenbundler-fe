@@ -580,15 +580,14 @@ const whoIsSigner = () => {
 </script>
 
 <template>
-  <div style="position: absolute; top: 0">
-    <!-- <button @click="modal.open()">Open Connect Modal</button>
+  <!-- <div style="position: absolute; top: 0; width: 100%"> -->
+  <!-- <button @click="modal.open()">Open Connect Modal</button>
     <button @click="modal.open({ view: 'Networks' })">Open Network Modal</button>
     <button @click="console.log(isConnected, address, chainId)">Log Account</button>
     <button @click="updateUser()">update user</button> -->
-    <w3m-button />
-    <button @click="createBundle()">Bundle Assets</button>
-    <button @click="whoIsSigner()">Who is Signer</button>
-  </div>
+  <w3m-button style="position: absolute; top: 0.5rem; right: 0.5rem" />
+  <button @click="createBundle()">Bundle Assets</button>
+  <!-- </div> -->
 
   <NFTViewer />
 </template>

@@ -4,8 +4,8 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 
-import nodePolyfills from "rollup-plugin-polyfill-node";
-const production = process.env.NODE_ENV === "production";
+import nodePolyfills from 'rollup-plugin-polyfill-node'
+const production = process.env.NODE_ENV === 'production'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,7 +14,7 @@ export default defineConfig({
     vueJsx(),
     !production &&
       nodePolyfills({
-        include: ["node_modules/**/*.js", new RegExp("node_modules/.vite/.*js")]
+        include: ['node_modules/**/*.js', new RegExp('node_modules/.vite/.*js')]
       })
   ],
   build: {
@@ -32,6 +32,16 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  },
+  server: {
+    proxy: {
+      '/api/v1/': {
+        target: 'https://tb.letna.space/',
+        changeOrigin: true,
+        secure: false
+      }
+      // broken
     }
   }
 })
